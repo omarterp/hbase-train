@@ -1,9 +1,7 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
+import com.sun.istack.NotNull;
 import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -23,13 +21,23 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class TablePartA{
 
-    //
+    // Table metadata, including column family and columns from potential flat file
     private enum TableMeta {
         POWERS("powers", new TreeMap<Integer, String>() {{
-                            put(1, "test.test");
+                            put(0, "rowkey.id");
+                            put(1, "personal.hero");
+                            put(2, "personal.power");
+                            put(3, "professional.name");
+                            put(4, "professional.xp");
+                            put(5, "custom.name");
                             }}),
         FOOD("food", new TreeMap<Integer, String>() {{
-                            put(1, "test.test");
+                            put(0, "rowkey.id");
+                            put(1, "nutrition.calories");
+                            put(2, "nutrition.fat");
+                            put(3, "nutrition.protein");
+                            put(4, "nutrition.sugar");
+                            put(5, "nutrition.taste");
                             }});
 
         private String tableName;
@@ -40,11 +48,24 @@ public class TablePartA{
             this.metadata = metadata;
         }
 
+        public static TableMeta getTableMeta(String tableMetaName) {
+            if(tableMetaName == null)
+                return null;
+
+            TableMeta tableMeta = null;
+            for(TableMeta tMeta : TableMeta.values()) {
+                if(tMeta.toString().equalsIgnoreCase(tableMetaName))
+                    tableMeta = tMeta;
+            }
+
+            return tableMeta;
+        }
+
         public String getTableName() {
             return tableName;
         }
 
-        public TreeMap getMetadata() {
+        public TreeMap<Integer, String> getMetadata() {
             return metadata;
         }
     }
@@ -52,7 +73,10 @@ public class TablePartA{
     private final Configuration conf = HBaseConfiguration.create();
     private HBaseAdmin admin;
 
-    private final List<Map<String, Object>> tableMeta = new ArrayList<>();
+    public TablePartA(String ip, String port) throws IOException {
+        setHbaseConf(ip, port);
+        admin = new HBaseAdmin(conf);
+    }
 
     private void setHbaseConf(String ip, String port) {
         conf.set("hbase.zookeeper.quorum", ip);
@@ -60,32 +84,48 @@ public class TablePartA{
         conf.set("zookeeper.znode.parent", "/hbase-unsecure");
     }
 
-    public TablePartA(String ip, String port) throws IOException {
-        setHbaseConf(ip, port);
-        admin = new HBaseAdmin(conf);
+    /**
+     * Create tables defined by TableMeta enum; return boolean based on successful Tables creation
+     * @return boolean
+     */
+    public boolean createTables() throws IOException {
+        for(TableMeta tableMeta : TableMeta.values()) {
+            String tableName = tableMeta.getTableName();
+            Set<String> columnFamilySet = new HashSet<>();
+
+            // Check if table exists, if so continue
+            if(tableExists(tableName)) {
+                continue;
+            }
+
+            // Add column family values to be added to Hbase Table
+            for(Map.Entry<Integer, String> entry : tableMeta.getMetadata().entrySet()) {
+                columnFamilySet.add(entry.getValue().split("\\.")[0]);
+            }
+
+            // Build out HTableDescriptor
+            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(tableName));
+            for(String columnFamily : columnFamilySet) {
+                tableDescriptor.addFamily(new HColumnDescriptor(columnFamily));
+            }
+            admin.createTable(tableDescriptor);
+        }
+
+        return true;
     }
 
-    public Configuration getConf() {
-        return conf;
+    private boolean tableExists(String tableName) throws IOException {
+        if(admin == null)
+            throw new IllegalStateException("Please initialize.");
+
+        return admin.tableExists(tableName.getBytes());
     }
-
-    public HBaseAdmin getAdmin() {
-        return admin;
-    }
-
-    public List<Map<String, Object>> getTableMeta() {
-        return tableMeta;
-    }
-
-
 
     public static void main(String[] args) throws IOException {
 
-        System.out.println(TableMeta.POWERS.getTableName());
-        System.out.println(TableMeta.POWERS.getMetadata());
+    TablePartA tablePartA = new TablePartA("192.168.1.2", "16020");
 
-        System.out.println(TableMeta.FOOD.getTableName());
-        System.out.println(TableMeta.FOOD.getMetadata());
+    tablePartA.createTables();
 
     //TODO
     System.out.println("Created table powers");
