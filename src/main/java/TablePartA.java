@@ -1,23 +1,17 @@
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
-import com.sun.istack.NotNull;
 import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-
 import org.apache.hadoop.hbase.TableName;
-
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
 
-import org.apache.hadoop.hbase.util.Bytes;
 
 public class TablePartA{
 
@@ -41,9 +35,9 @@ public class TablePartA{
                             }});
 
         private String tableName;
-        private TreeMap metadata;
+        private TreeMap<Integer, String> metadata;
 
-        TableMeta(String tableName, TreeMap metadata) {
+        TableMeta(String tableName, TreeMap<Integer, String> metadata) {
             this.tableName = tableName;
             this.metadata = metadata;
         }
@@ -88,7 +82,7 @@ public class TablePartA{
      * Create tables defined by TableMeta enum; return boolean based on successful Tables creation
      * @return boolean
      */
-    public boolean createTables() throws IOException {
+    private boolean createTables() throws IOException {
         for(TableMeta tableMeta : TableMeta.values()) {
             String tableName = tableMeta.getTableName();
             Set<String> columnFamilySet = new HashSet<>();
@@ -103,7 +97,7 @@ public class TablePartA{
                 columnFamilySet.add(entry.getValue().split("\\.")[0]);
             }
 
-            // Build out HTableDescriptor
+            // Build out HTableDescriptor with defined column families
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(tableName));
             for(String columnFamily : columnFamilySet) {
                 tableDescriptor.addFamily(new HColumnDescriptor(columnFamily));
@@ -123,8 +117,8 @@ public class TablePartA{
     }
 
     public static void main(String[] args) throws IOException {
-        TablePartA tablePartA = new TablePartA("192.168.1.2", "2181");
+//        TablePartA tablePartA = new TablePartA("192.168.1.2", "2181");
+        TablePartA tablePartA = new TablePartA("127.0.0.1", "2181");
         tablePartA.createTables();
     }
 }
-
