@@ -109,6 +109,7 @@ public class TablePartA{
                 tableDescriptor.addFamily(new HColumnDescriptor(columnFamily));
             }
             admin.createTable(tableDescriptor);
+            System.out.println("Created table " + tableName);
         }
 
         return true;
@@ -122,16 +123,8 @@ public class TablePartA{
     }
 
     public static void main(String[] args) throws IOException {
-
-    TablePartA tablePartA = new TablePartA("192.168.1.2", "16020");
-
-    tablePartA.createTables();
-
-    //TODO
-    System.out.println("Created table powers");
-
-    //TODO
-    System.out.println("Created table food");
+        TablePartA tablePartA = new TablePartA("192.168.1.2", "2181");
+        tablePartA.createTables();
     }
 }
 
