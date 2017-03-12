@@ -18,20 +18,18 @@ public class TablePartA{
     // Table metadata, including column family and columns from potential flat file
     private enum TableMeta {
         POWERS("powers", new TreeMap<Integer, String>() {{
-                            put(0, "rowkey.id");
-                            put(1, "personal.hero");
-                            put(2, "personal.power");
-                            put(3, "professional.name");
-                            put(4, "professional.xp");
-                            put(5, "custom.name");
+                            put(0, "personal.hero");
+                            put(1, "personal.power");
+                            put(2, "professional.name");
+                            put(3, "professional.xp");
+                            put(4, "custom.color");
                             }}),
         FOOD("food", new TreeMap<Integer, String>() {{
-                            put(0, "rowkey.id");
-                            put(1, "nutrition.calories");
-                            put(2, "nutrition.fat");
-                            put(3, "nutrition.protein");
-                            put(4, "nutrition.sugar");
-                            put(5, "nutrition.taste");
+                            put(0, "nutrition.calories");
+                            put(1, "nutrition.fat");
+                            put(2, "nutrition.protein");
+                            put(3, "nutrition.sugar");
+                            put(4, "nutrition.taste");
                             }});
 
         private String tableName;
@@ -117,8 +115,8 @@ public class TablePartA{
     }
 
     public static void main(String[] args) throws IOException {
-//        TablePartA tablePartA = new TablePartA("192.168.1.2", "2181");
-        TablePartA tablePartA = new TablePartA("127.0.0.1", "2181");
+        TablePartA tablePartA = new TablePartA("192.168.1.2", "2181");
+//        TablePartA tablePartA = new TablePartA("127.0.0.1", "2181");
         tablePartA.createTables();
     }
 }
